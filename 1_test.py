@@ -30,6 +30,7 @@ import cv2
 import numpy as np
 import os
 from datetime import datetime
+from config import camera_hflip, camera_vflip
 
 
 # File for captured image
@@ -57,7 +58,8 @@ print ("Scaled image resolution: "+str(img_width)+" x "+str(img_height))
 camera = PiCamera(stereo_mode='side-by-side',stereo_decimate=False)
 camera.resolution=(cam_width, cam_height)
 camera.framerate = 20
-camera.hflip = True
+camera.hflip = camera_hflip
+camera.vflip = camera_vflip
 
 
 t2 = datetime.now()

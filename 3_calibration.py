@@ -29,20 +29,12 @@ import json
 from stereovision.calibration import StereoCalibrator
 from stereovision.calibration import StereoCalibration
 from stereovision.exceptions import ChessboardNotFoundError
-
-
+from config import rows, columns, square_size, image_size
+from config import total_photos
 # Global variables preset
-total_photos = 30
-photo_width = 640
-photo_height = 240
-img_width = 320
-img_height = 240
-image_size = (img_width,img_height)
+
 
 # Chessboard parameters
-rows = 6
-columns = 9
-square_size = 2.5
 
 
 calibrator = StereoCalibrator(rows, columns, square_size, image_size)
@@ -64,7 +56,7 @@ while photo_counter != total_photos:
         print (error)
         print ("Pair No "+ str(photo_counter) + " ignored")
       else:
-        calibrator.add_corners((imgLeft, imgRight), True)
+        calibrator.add_corners((imgLeft, imgRight), False)
         
 print ('End cycle')
 

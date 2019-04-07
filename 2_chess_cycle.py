@@ -29,10 +29,15 @@ import picamera
 from picamera import PiCamera
 import cv2
 import numpy as np
+from stereovision.calibration import StereoCalibrator
+from stereovision.exceptions import ChessboardNotFoundError
+
+from config import camera_hflip, camera_vflip, photo_width, photo_height
+from config import img_width, img_height, image_size
+from config import rows, columns, square_size
+from config import total_photos, countdown
 
 # Photo session settings
-total_photos = 30             # Number of images to take
-countdown = 5                 # Interval for count-down timer, seconds
 font=cv2.FONT_HERSHEY_SIMPLEX # Cowntdown timer font
  
 # Camera settimgs
@@ -56,19 +61,43 @@ print ("Scaled image resolution: "+str(img_width)+" x "+str(img_height))
 # Initialize the camera
 camera = PiCamera(stereo_mode='side-by-side', stereo_decimate=False)
 camera.resolution=(cam_width, cam_height)
-camera.framerate = 20
-camera.hflip = True
+camera.framerate = 5
+camera.hflip = camera_hflip
+camera.vflip = camera_vflip
+
+calibrator = StereoCalibrator(rows, columns,
+                              square_size, image_size)
 
 # Lets start taking photos! 
 counter = 0
 t2 = datetime.now()
 print ("Starting photo sequence")
+
+all_left_corners = np.array([[0, 0]])
+all_right_corners = np.array([[0, 0]])
+
 for frame in camera.capture_continuous(capture, format="bgra", \
                   use_video_port=True, resize=(img_width,img_height)):
     t1 = datetime.now()
     cntdwn_timer = countdown - int ((t1-t2).total_seconds())
     # If cowntdown is zero - let's record next image
-    if cntdwn_timer == -1:
+    if cntdwn_timer <= -1:
+      ## check frame for two boards
+      imgLeft = frame[0:img_height,0:img_width//2] #Y+H and X+W
+      imgRight = frame[0:img_height,img_width//2:]
+      try:
+        left_corners = np.squeeze(calibrator._get_corners(imgLeft))
+        right_corners = np.squeeze(calibrator._get_corners(imgRight))
+        all_left_corners = np.vstack([all_left_corners,
+                                      left_corners.astype(int)])
+        all_right_corners = np.vstack([all_right_corners,
+                                       right_corners.astype(int)])
+      except ChessboardNotFoundError as error:
+        print (error)
+        print ("Pair No try again")
+        t2 = datetime.now()
+        continue
+
       counter += 1
       filename = './scenes/scene_'+str(img_width)+'x'+str(img_height)+'_'+\
                   str(counter) + '.png'
@@ -80,6 +109,15 @@ for frame in camera.capture_continuous(capture, format="bgra", \
       next
     # Draw cowntdown counter, seconds
     cv2.putText(frame, str(cntdwn_timer), (50,50), font, 2.0, (0,0,255),4, cv2.LINE_AA)
+    for i in range(1, len(all_left_corners)):
+        cv2.circle(frame, (all_left_corners[i, 0], all_left_corners[i, 1]),
+                   2, (255, 0, 0), -1)
+        cv2.circle(
+            frame,
+            (320 + all_right_corners[i, 0], all_right_corners[i, 1]),
+             2, (0, 0, 255), -1)
+
+    
     cv2.imshow("pair", frame)
     key = cv2.waitKey(1) & 0xFF
     
@@ -89,4 +127,32 @@ for frame in camera.capture_continuous(capture, format="bgra", \
 
  
 print ("Photo sequence finished")
- 
+
+
+# Global variables reset
+photo_counter = 0
+
+
+# Main pair cut cycle
+if (os.path.isdir("./pairs")==False):
+    os.makedirs("./pairs")
+while photo_counter != total_photos:
+    photo_counter +=1
+    filename = './scenes/scene_'+str(photo_width)+'x'+str(photo_height)+\
+               '_'+str(photo_counter) + '.png'
+    if os.path.isfile(filename) == False:
+        print ("No file named "+filename)
+        continue
+    pair_img = cv2.imread(filename,-1)
+    
+    imgLeft = pair_img [0:img_height,0:img_width//2] #Y+H and X+W
+    imgRight = pair_img [0:img_height,img_width//2:img_width]
+    leftName = './pairs/left_'+str(photo_counter).zfill(2)+'.png'
+    rightName = './pairs/right_'+str(photo_counter).zfill(2)+'.png'
+    cv2.imwrite(leftName, imgLeft)
+    cv2.imwrite(rightName, imgRight)
+    print ('Pair No '+str(photo_counter)+' saved.')
+cv2.imshow("ImagePair", pair_img)
+print ('End cycle (type any key in preview window to end)')
+cv2.waitKey(0)
+    

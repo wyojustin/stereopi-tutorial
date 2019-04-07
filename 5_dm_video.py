@@ -31,6 +31,7 @@ import json
 from stereovision.calibration import StereoCalibrator
 from stereovision.calibration import StereoCalibration
 from datetime import datetime
+from config import camera_hflip, camera_vflip
 
 # Depth map default preset
 SWS = 5
@@ -65,7 +66,8 @@ print ("Scaled image resolution: "+str(img_width)+" x "+str(img_height))
 camera = PiCamera(stereo_mode='side-by-side',stereo_decimate=False)
 camera.resolution=(cam_width, cam_height)
 camera.framerate = 20
-camera.hflip = True
+camera.hflip = camera_hflip
+camera.vflip = camera_vflip
 
 # Implementing calibration data
 print('Read calibration data and rectifying stereo pair...')
@@ -87,6 +89,7 @@ def stereo_depth_map(rectified_pair):
     dmLeft = rectified_pair[0]
     dmRight = rectified_pair[1]
     disparity = sbm.compute(dmLeft, dmRight)
+    print (np.amax(disparity), np.amin(disparity))
     local_max = disparity.max()
     local_min = disparity.min()
     disparity_grayscale = (disparity-local_min)*(65535.0/(local_max-local_min))
