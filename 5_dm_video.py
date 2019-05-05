@@ -76,22 +76,27 @@ calibration = StereoCalibration(input_folder='calib_result')
 # Initialize interface windows
 cv2.namedWindow("Image")
 cv2.moveWindow("Image", 50,100)
-cv2.namedWindow("left")
-cv2.moveWindow("left", 450,100)
-cv2.namedWindow("right")
-cv2.moveWindow("right", 850,100)
+
+DISPLAY_ALL = True
+if DISPLAY_ALL:
+    cv2.namedWindow("left")
+    cv2.moveWindow("left", 450,100)
+    cv2.namedWindow("right")
+    cv2.moveWindow("right", 850,100)
 
 
 disparity = np.zeros((img_width, img_height), np.uint8)
-sbm = cv2.StereoBM_create(numDisparities=0, blockSize=21)
+#sbm = cv2.StereoBM_create(numDisparities=0, blockSize=21)
+sbm = cv2.StereoBM_create(numDisparities=0, blockSize=11)
 
 def stereo_depth_map(rectified_pair):
     dmLeft = rectified_pair[0]
     dmRight = rectified_pair[1]
     disparity = sbm.compute(dmLeft, dmRight)
-    print (np.amax(disparity), np.amin(disparity))
     local_max = disparity.max()
+    local_max = 1000
     local_min = disparity.min()
+    print(local_min, local_max)
     disparity_grayscale = (disparity-local_min)*(65535.0/(local_max-local_min))
     disparity_fixtype = cv2.convertScaleAbs(disparity_grayscale, alpha=(255.0/65535.0))
     disparity_color = cv2.applyColorMap(disparity_fixtype, cv2.COLORMAP_JET)
@@ -119,7 +124,9 @@ def load_map_settings( fName ):
     sbm.setPreFilterType(1)
     sbm.setPreFilterSize(PFS)
     sbm.setPreFilterCap(PFC)
-    sbm.setMinDisparity(MDS)
+    #sbm.setMinDisparity(MDS)
+    sbm.setMinDisparity(1)
+    
     sbm.setNumDisparities(NOD)
     sbm.setTextureThreshold(TTH)
     sbm.setUniquenessRatio(UR)
@@ -140,8 +147,9 @@ for frame in camera.capture_continuous(capture, format="bgra", use_video_port=Tr
     rectified_pair = calibration.rectify((imgLeft, imgRight))
     disparity = stereo_depth_map(rectified_pair)
     # show the frame
-    cv2.imshow("left", imgLeft)
-    cv2.imshow("right", imgRight)    
+    if DISPLAY_ALL:
+        cv2.imshow("left", rectified_pair[0])
+        cv2.imshow("right", rectified_pair[1])    
 
     t2 = datetime.now()
     print ("DM build time: " + str(t2-t1))

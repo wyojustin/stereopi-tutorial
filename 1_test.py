@@ -84,4 +84,4 @@ for frame in camera.capture_continuous(capture, format="bgra", use_video_port=Tr
         cv2.imwrite(filename, frame)
         break
    
-    
+    time.sleep(2)

@@ -118,41 +118,41 @@ for frame in camera.capture_continuous(capture, format="bgra", \
              2, (0, 0, 255), -1)
 
     
-    cv2.imshow("pair", frame)
+    cv2.imshow("pair", frame[::-1,::-1])
     key = cv2.waitKey(1) & 0xFF
     
     # Press 'Q' key to quit, or wait till all photos are taken
     if (key == ord("q")) | (counter == total_photos):
       break
-
- 
-print ("Photo sequence finished")
-
-
-# Global variables reset
-photo_counter = 0
+  
+if counter == total_photos:
+    print ("Photo sequence finished")
 
 
-# Main pair cut cycle
-if (os.path.isdir("./pairs")==False):
-    os.makedirs("./pairs")
-while photo_counter != total_photos:
-    photo_counter +=1
-    filename = './scenes/scene_'+str(photo_width)+'x'+str(photo_height)+\
-               '_'+str(photo_counter) + '.png'
-    if os.path.isfile(filename) == False:
-        print ("No file named "+filename)
-        continue
-    pair_img = cv2.imread(filename,-1)
-    
-    imgLeft = pair_img [0:img_height,0:img_width//2] #Y+H and X+W
-    imgRight = pair_img [0:img_height,img_width//2:img_width]
-    leftName = './pairs/left_'+str(photo_counter).zfill(2)+'.png'
-    rightName = './pairs/right_'+str(photo_counter).zfill(2)+'.png'
-    cv2.imwrite(leftName, imgLeft)
-    cv2.imwrite(rightName, imgRight)
-    print ('Pair No '+str(photo_counter)+' saved.')
-cv2.imshow("ImagePair", pair_img)
-print ('End cycle (type any key in preview window to end)')
-cv2.waitKey(0)
+    # Global variables reset
+    photo_counter = 0
+
+
+    # Main pair cut cycle
+    if (os.path.isdir("./pairs")==False):
+        os.makedirs("./pairs")
+    while photo_counter != total_photos:
+        photo_counter +=1
+        filename = './scenes/scene_'+str(photo_width)+'x'+str(photo_height)+\
+                   '_'+str(photo_counter) + '.png'
+        if os.path.isfile(filename) == False:
+            print ("No file named "+filename)
+            continue
+        pair_img = cv2.imread(filename,-1)
+
+        imgLeft = pair_img [0:img_height,0:img_width//2] #Y+H and X+W
+        imgRight = pair_img [0:img_height,img_width//2:img_width]
+        leftName = './pairs/left_'+str(photo_counter).zfill(2)+'.png'
+        rightName = './pairs/right_'+str(photo_counter).zfill(2)+'.png'
+        cv2.imwrite(leftName, imgLeft)
+        cv2.imwrite(rightName, imgRight)
+        print ('Pair No '+str(photo_counter)+' saved.')
+    cv2.imshow("ImagePair", pair_img)
+    print ('End cycle (type any key in preview window to end)')
+    cv2.waitKey(0)
     

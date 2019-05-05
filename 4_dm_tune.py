@@ -138,7 +138,7 @@ def save_map_settings( event ):
 
 buttons.on_clicked(save_map_settings)
 
-
+loading_settings = 0
 loadax = plt.axes([0.5, 0.38, 0.15, 0.04]) #stepX stepY width height
 buttonl = Button(loadax, 'Load settings', color=axcolor, hovercolor='0.975')
 def load_map_settings( event ):
