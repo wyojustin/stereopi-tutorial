@@ -35,26 +35,20 @@ Video: https://youtu.be/1XCAlU3k-xs
 
 <br>
 
-<b>3_pairs_cut.py</b> - just cuts all captured photos to left and right images.<br>
-
-Video: https://youtu.be/95DWmPECbDc
-
-<br>
-
-<b>4_calibration.py</b> - calibrate StereoPi cameas setup using pairs from script 4.
+<b>3_calibration.py</b> - calibrate StereoPi cameas setup using pairs from script 4.
 
 Video: https://youtu.be/vtPhu23tKGo
 
 <br>
 
 
-<b>5_dm_tune.py</b> - script for fine tune of disparity map settings.<br>
+<b>4_dm_tune.py</b> - script for fine tune of disparity map settings.<br>
 
 Video: https://youtu.be/Z4j3NrMyeGE
 
 <br>
 
-<b>6_dm_video.py</b> - builds disparity map in real time.<br>
+<b>5_dm_video.py</b> - builds disparity map in real time.<br>
 
 Video: https://youtu.be/f29arVstfZA
 
